@@ -1,4 +1,4 @@
-# application-archconf.yaml
+# archconf-iam.yaml
 
 ## Resource Types
 + [AWS::IAM::Group](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-group.html)
