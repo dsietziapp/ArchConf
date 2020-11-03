@@ -136,13 +136,6 @@ Resources:
       PolicyDocument:
         Version: 2012-10-17
         Statement:
-        - Sid: MFALogin
-          Effect: Allow
-          NotAction: iam:*
-          Resource: '*'
-          Condition:
-            Bool:
-              aws:MultiFactorAuthPresent: true
         - Sid: NoBilling
           Effect: Deny
           Action: aws-portal:*Billing
