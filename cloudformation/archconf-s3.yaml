@@ -199,17 +199,17 @@ Resources:
           #  #  StringLike: 
           #  #    aws:iam:
           #  #    - "298049552655:role/*"
-#  rAccessPoint:
-#    Type: AWS::S3::AccessPoint
-#    Properties: 
-#      Bucket:
-#        Ref: rS3Bucket
-#      Name: !Sub "${pApplication}:artfact-repository-accesspoint"
-#      PublicAccessBlockConfiguration:
-#        BlockPublicAcls: true
-#        BlockPublicPolicy: true
-#        IgnorePublicAcls: false
-#        RestrictPublicBuckets: false
+  rAccessPoint:
+    Type: AWS::S3::AccessPoint
+    Properties: 
+      Bucket:
+        Ref: rS3Bucket
+      Name: !Sub ${pOrganization}-${pApplication}-workshop-accesspoint
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
 Outputs:
   rS3BucketArn:
     Value: 
