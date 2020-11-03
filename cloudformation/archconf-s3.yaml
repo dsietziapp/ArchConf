@@ -1,0 +1,228 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'Provides the S#3 Buckets used during the ArchConf Workshops'
+Parameters:
+  pOrganization:
+    Description: The name of the portfolio that identifies its products, applications, and components
+    Type: String
+    MinLength: 1
+    MaxLength: 30
+    AllowedPattern: '[a-zA-Z0-9\-]*'
+    Default: ${{ iapp.catalog.organization }}
+  pPortfolio:
+    Description: The name of the portfolio that identifies its products, applications, and components
+    Type: String
+    MinLength: 1
+    MaxLength: 15
+    AllowedPattern: '[a-zA-Z0-9\-]*'
+    Default: ${{ iapp.catalog.portfolio }}
+  pProduct:
+    Description: The name of the product that identifies its applications and components
+    Type: String
+    MinLength: 1
+    MaxLength: 15
+    AllowedPattern: '[a-zA-Z0-9\-]*'
+    Default: ${{ iapp.catalog.product }}
+  pApplication:
+    Description: The name of the application (or service module) that identifies its components
+    Type: String
+    MinLength: 1
+    MaxLength: 15
+    AllowedPattern: '[a-zA-Z0-9\-]*'
+    Default: ${{ iapp.catalog.application }}
+  pComponent:
+    Description: The name of the component that aligns with the application or service module
+    Type: String
+    MinLength: 0
+    MaxLength: 15
+    AllowedPattern: '[a-zA-Z0-9\-]*'
+    Default: ${{ iapp.catalog.component }}
+  pDepartment:
+    Description: The name of the department that owns the resource
+    Type: String
+    MinLength: 1
+    MaxLength: 15
+    AllowedPattern: '[a-zA-Z0-9\-]*'
+    Default: ${{ iapp.catalog.department }}
+  pEnvironment:
+    Description: 'The name of the environment in which the resource is running (e.g.: sandbox, development, test, production)'
+    Type: String
+    MinLength: 1
+    MaxLength: 15
+    AllowedPattern: '[a-zA-Z0-9\-]*'
+    Default: ${{ iapp.aws.environment }}
+  pSupportEmail:
+    Description: The email address of the support team to contact
+    Type: String
+    MinLength: 8
+    MaxLength: 30
+    AllowedPattern: (?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])
+    Default: ${{ iapp.catalog.support_email }}
+Resources:  
+  rS3Bucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault: 
+              SSEAlgorithm: AES256
+      BucketName: 
+        !Sub ${pOrganization}-${pApplication}-workshop
+      Tags: 
+        - 
+          Key: "Name"
+          Value: 
+            !Sub ${pOrganization}-${pApplication}-workshop
+        - 
+          Key: "iapp-organization"
+          Value: 
+            !Ref pOrganization
+        - 
+          Key: "iapp-portfolio"
+          Value: 
+            !Ref pPortfolio
+        - 
+          Key: "iapp-product"
+          Value: 
+            !Ref pProduct
+        - 
+          Key: "iapp-application"
+          Value: 
+            !Ref pApplication
+        - 
+          Key: "iapp-component"
+          Value:
+            !Ref pComponent
+        - 
+          Key: "iapp-department"
+          Value:
+            !Ref pDepartment
+        - 
+          Key: "iapp-environment"
+          Value:
+            !Ref pEnvironment
+        - 
+          Key: "iapp-support-email"
+          Value:
+            !Ref pSupportEmail    
+        - 
+          Key: "iapp-access-type"
+          Value: 'private'
+        - 
+          Key: "iapp-resource-type"
+          Value: 'data'   
+  rS3BucketPolicy:
+    DependsOn:
+      - rS3Bucket
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: 
+        !Ref rS3Bucket
+      PolicyDocument:
+        Statement:
+          -
+            Sid: Enforce HTTPS Connections
+            Action:
+              - s3:*
+            Effect: "Deny"
+            Resource:
+              !GetAtt rS3Bucket.Arn
+            Principal: "*"
+            Condition: 
+              Bool: 
+                aws:SecureTransport: 'false' 
+          -
+            Sid: Organization Admin Role Bucket Access
+            Action:
+              - s3:*
+            Effect: "Allow"
+            Resource:            
+              - !GetAtt rS3Bucket.Arn
+              - !Join ["", [!GetAtt rS3Bucket.Arn, "/*"]]
+            Principal: 
+              AWS: 
+                - arn:aws:iam::298049552655:role/OrganizationAccountAccessRole
+          -
+            Sid: Workshop Particiant Bucket Access
+            Action:
+              - s3:DeleteObject
+              - s3:GetObject
+              - s3:GetObjectTagging
+              - s3:GetObjectVersion
+              - s3:GetObjectVersionForReplication
+              - s3:GetObjectVersionTagging              
+              - s3:ListBucket
+              - s3:PutObject
+              - s3:PutObjectAcl
+              - s3:DeleteObjectTagging
+              - s3:DeleteObjectVersionTagging
+              - s3:PutBucketTagging
+              - s3:PutObjectTagging
+              - s3:PutObjectVersionTagging
+              - s3:ReplicateTags
+            Effect: "Allow"
+            Resource:            
+              - !GetAtt rS3Bucket.Arn
+              - !Join ["", [!GetAtt rS3Bucket.Arn, "/*"]]
+            Principal: 
+              AWS: 
+                - Fn::ImportValue:
+                    !Sub "shared:${pApplication}:user:arn"
+                - Fn::ImportValue:
+                    !Sub "shared:${pApplication}:role:arn"
+                - !Sub arn:aws:iam::${AWS::AccountId}:role/aws-service-role/cloud9.amazonaws.com/AWSServiceRoleForAWSCloud9
+          #-
+          #  Sid: All Account Roles Bucket Access
+          #  Action:
+          #    - s3:GetObject
+          #    - s3:GetObjectTagging
+          #    - s3:GetObjectVersion
+          #    - s3:GetObjectVersionForReplication
+          #    - s3:GetObjectVersionTagging              
+          #    - s3:ListBucket
+          #  Effect: "Allow"
+          #  Resource:            
+          #    - !GetAtt rS3Bucket.Arn
+          #    - !Join ["", [!GetAtt rS3Bucket.Arn, "/*"]]
+          #  Principal: 
+          #    #AWS: "*" 
+          #    #AWS:
+          #    # - arn:aws:iam::298049552655:role/AWS-LIVE-CONF-SANDBOX-rChimeSdkEndLambdaRole-SNOEZ7R2P2AX
+          #    # - arn:aws:iam::298049552655:role/AWS-LIVE-CONF-SANDBOX-rChimeSdkIndexLambdaRole-TERPDV1FDXI5
+          #    # - arn:aws:iam::298049552655:role/AWS-LIVE-CONF-SANDBOX-rChimeSdkIndexV2LambdaRole-1EN6M5F1C02JY
+          #    # - arn:aws:iam::298049552655:role/AWS-LIVE-CONF-SANDBOX-rChimeSdkJoinLambdaRole-1QIPTOZ971KZ7
+          #  #Condition: 
+          #  #  StringLike: 
+          #  #    aws:iam:
+          #  #    - "298049552655:role/*"
+#  rAccessPoint:
+#    Type: AWS::S3::AccessPoint
+#    Properties: 
+#      Bucket:
+#        Ref: rS3Bucket
+#      Name: !Sub "${pApplication}:artfact-repository-accesspoint"
+#      PublicAccessBlockConfiguration:
+#        BlockPublicAcls: true
+#        BlockPublicPolicy: true
+#        IgnorePublicAcls: false
+#        RestrictPublicBuckets: false
+Outputs:
+  rS3BucketArn:
+    Value: 
+      !GetAtt rS3Bucket.Arn
+    Description: "Arn of the bucket"
+    Export:
+      Name: !Sub "shared:${pApplication}:bucket:arn"
+  rS3BucketName:
+    Value: 
+      !Ref rS3Bucket
+    Description: "Name of the bucket"
+    Export:
+      Name: !Sub "shared:${pApplication}:bucket:name"
+  SourceCode:
+    Description: The location of the source code for this CFT
+    Value: 'https://github.com/dsietziapp/ArchConf'

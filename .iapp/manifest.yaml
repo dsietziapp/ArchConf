@@ -24,3 +24,4 @@ catalog:
 queue:
   - application-archconf.yaml
   - archconf-iam.yaml
+  - archconf-s3.yaml

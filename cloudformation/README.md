@@ -11,7 +11,7 @@ Performs the default steps to setup the application, (registration, secret, etc)
 
 Template: [application-archconf](./application-archconf.md)
 
-### aiam
+### archconf-iam
 Provides the base security, IAM, and access configuration
 > + role
 > + group
@@ -20,6 +20,13 @@ Provides the base security, IAM, and access configuration
 > + policies
 
 Template: [archconf-iam](./archconf-iam.md)
+
+### archconf-s3
+Provides the base security, IAM, and access configuration
+> + bucket
+> + bucket policy
+
+Template: [archconf-s3](./archconf-s3.md)
 
 ### Example Calling Custom Resources
 Provides an example Stack that call custom resources to reference networking resources, (e.g.: VPN, Subnet, Security Group).
