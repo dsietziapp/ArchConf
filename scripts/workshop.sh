@@ -21,7 +21,7 @@ do
     ./scripts/$i
 done
 
-./cleanup.sh
+./scripts/cleanup.sh
 
 #echo Performing installations ...
 #./install-rust.sh
