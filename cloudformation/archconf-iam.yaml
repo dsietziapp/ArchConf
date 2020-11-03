@@ -127,6 +127,7 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AWSCloud9User
         - arn:aws:iam::aws:policy/AWSCloud9EnvironmentMember
+        - arn:aws:iam::aws:policy/IAMUserChangePassword
       Path: /
   rArchConfPolicy:
     Type: AWS::IAM::ManagedPolicy
