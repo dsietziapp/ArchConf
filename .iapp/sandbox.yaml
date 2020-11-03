@@ -1,0 +1,10 @@
+pipeline:
+  release_lvl: pre-alpha
+  release_vrs: v0.0.1
+aws:
+  # (Required) The AWS region to use
+  region: us-east-1
+  # (Required) The number of the AWS Account to use (e.g.: us-east-1)
+  account: 298049552655
+  # (Required) The name of the environment to use
+  environment: sandbox
