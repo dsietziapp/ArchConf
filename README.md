@@ -1,18 +1,53 @@
-# cft-project
-![Production CFT Project](https://github.com/PrivacyAssociation/cft-project/workflows/Production%20Pipeline/badge.svg)
-
-![Nonproduction CFT Project](https://github.com/PrivacyAssociation/cft-project/workflows/Nonproduction%20Pipeline/badge.svg)
+# ArchConf WorkShop
+![Nonproduction Pipeline](https://github.com/dsietziapp/ArchConf/workflows/Nonproduction%20Pipeline/badge.svg)
 
 ---
 
-This is a boilerplate for creating AWS Cloudformation repositories for a product. It includes an example [Cloudformaiton Template (CFT)](./cloudformation/template.yaml) as well as an automated CI/CD pipeline for building and deploying the specified templates.
+## Setup
 
-**IMPORTNAT** Make sure to modify the properties files in the `.iapp` folder to 
+To setup your Cloud9 Environment:
+
+```unix
+aws s3 cp s3://iapp-archconf-workshop/workshop.sh workshop.sh
+sudo chmod +x workshop.sh 
+./workshop.sh
+```
 
 ---
 
-### BRANCHING
-+ [Branching Model](./BRANCHING.md)
+## Kafka
 
-### PIPELINE
-+ [CI/CD Pipeline](./PIPELINE.md)
+### Starting
+
+__Zookeeper__
+
+In a new terminal ...
+```unix
+./zookeeper-start.sh
+```
+
+__Kafka__
+
+In a new terminal ...
+```unix
+./kafka-start.sh
+```
+
+### Stopping
+In a your main terminal ...
+
+__Zookeeper__
+
+```unix
+./zookeeper-stop.sh
+```
+
+__Kafka__
+```unix
+./kafka-stop.sh
+```
+
+---
+
++ [Scripts](./scripts/README.md)
++ [CloudformationTempaltes](./cloudformation/README.md)
