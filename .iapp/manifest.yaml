@@ -23,3 +23,4 @@ catalog:
 # (Optional) A list (array) of template files (including extension) to build and deploy in the order specified
 queue:
   - application-archconf.yaml
+  - iam.yaml
