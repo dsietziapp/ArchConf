@@ -1,4 +1,4 @@
-# live-conf-application.yaml
+# application-archconf.yaml
 
 ## Resource Types
 + [Custom::String](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cfn-customresource.html)

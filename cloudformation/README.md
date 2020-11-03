@@ -2,14 +2,14 @@
 
 The following modules are to deployed in the following order:
 
-### live-conf-application
+### application-archconf
 Performs the default steps to setup the application, (registration, secret, etc).
 > NOTE: Make sure to rename the CFT based on your applicaiton name.
 > + .iapp/manifest.yaml
-> + cloudformation/application-myapp.yaml
-> + cloudformation/application-myapp.md
+> + cloudformation/application-archconf.yaml
+> + cloudformation/application-archconf.md
 
-Template: [application-[name of your application]](./application-myapp.md)
+Template: [application-archconf](./application-archconf.md)
 
 ### Example Calling Custom Resources
 Provides an example Stack that call custom resources to reference networking resources, (e.g.: VPN, Subnet, Security Group).

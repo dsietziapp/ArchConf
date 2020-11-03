@@ -1,7 +1,7 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
-Description: This template provides a API for managing the MediaLive Channel and the recording of the stream
+Description: This template provides the resoruces for the ArchConf 2020 Workshops
 Parameters:
   pOrganization:
     Description: The name of the portfolio that identifies its products, applications, and components
