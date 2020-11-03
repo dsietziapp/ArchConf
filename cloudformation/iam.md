@@ -1,7 +1,11 @@
 # application-archconf.yaml
 
 ## Resource Types
-+ [Custom::String](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cfn-customresource.html)
++ [AWS::IAM::Group](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-group.html)
++ [AWS::IAM::InstanceProfile](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-instanceprofile.html)
++ [AWS::IAM::ManagedPolicy](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-managedpolicy.html)
++ [AWS::IAM::Role](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html)
++ [AWS::IAM::User](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-user.html)
 
 ## Template Parameters
 | Parameter                 | Type    | Description                                                                                                             |
@@ -16,9 +20,14 @@
 | pSupportEmail             | String  | The email address of the support team to contact |
 
 ## Exports
-| Name                                                     | Description                                     |
-| -------------------------------------------------------- | ----------------------------------------------- |
+| Name                         | Description                     |
+| ---------------------------- | ------------------------------- |
+| shared:archconf:role:name    | Name of the ArchConf role       |
+| shared:archconf:role:arn     | AWS arn of the ArchConf role    |
+| shared:archconf:group:name   | Name of the ArchConf group      |
+| shared:archconf:group:arn    | AWS arn of the ArchConf group   |
+| shared:archconf:profile:name | Name of the ArchConf profile    |
+| shared:archconf:profile:arn  | AWS arn of the ArchConf profile |
+| shared:archconf:user:arn     | AWS arn of the ArchConf user    |
 
 ## Further Reading
-+ [Hands-On Experience with Data as a Service](https://archconf.com/session?id=46844)
-+ [Building a Test Data Generation Service](https://archconf.com/session?id=46792)
