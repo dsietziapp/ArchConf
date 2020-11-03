@@ -53,4 +53,4 @@ __Kafka__
 ---
 
 + [Scripts](./scripts/README.md)
-+ [CloudformationTempaltes](./cloudformation/README.md)
++ [CloudformationTemplates](./cloudformation/README.md)
