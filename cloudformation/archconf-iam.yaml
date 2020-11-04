@@ -129,7 +129,7 @@ Resources:
         - arn:aws:iam::aws:policy/AWSCloud9EnvironmentMember
         - arn:aws:iam::aws:policy/IAMUserChangePassword
       Path: /
-  rArchConfPolicy:
+  rArchConfDenyPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       ManagedPolicyName: ArchConfDenyPolicy
@@ -159,6 +159,23 @@ Resources:
           - kms:Delete*
           - kms:Put*
           - kms:Update*
+          Resource: '*'
+      Roles:
+      - !Ref rArchConfRole
+      Groups:
+      - !Ref rArchConfGroup
+  rArchConfAllowPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: ArchConfAllowPolicy
+      Description: 'Permissions allowed to ArchConf workshop participants'
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Sid: EC2Mngmnt
+          Effect: Allow
+          Action:
+          - ec2:DecribeVolumesModifications
           Resource: '*'
       Roles:
       - !Ref rArchConfRole
