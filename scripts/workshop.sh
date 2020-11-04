@@ -5,7 +5,7 @@ echo Updating yum ...
 sudo yum update -y
 
 echo Downloading scripts ...
-files=( "install-rust.sh" "install-kafka.sh" "kafka-start.sh" "kafka-stop.sh" "zookeeper-start.sh" "zookeeper-stop.sh" "resize.sh" "cleanup.sh" )
+files=( "install-rust.sh" "install-kafka.sh" "kafka-start.sh" "kafka-stop.sh" "zookeeper-start.sh" "zookeeper-stop.sh" "resize.sh" "cleanup.sh" "curl-hello.sh" "curl-sourcing.sh" )
 for f in "${files[@]}"
 do
     :
