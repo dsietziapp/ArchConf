@@ -175,6 +175,7 @@ Resources:
         - Sid: EC2Mngmnt
           Effect: Allow
           Action:
+          - ec2:DescribeInstances
           - ec2:DecribeVolumesModifications
           Resource: '*'
       Roles:
