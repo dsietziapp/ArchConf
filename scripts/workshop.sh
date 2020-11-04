@@ -13,7 +13,7 @@ do
     sudo chmod +x ./scripts/$f
 done
 
-installs=( "install-rust.sh" "install-kafka.sh" )
+installs=( "install-rust.sh" "install-kafka.sh" "resize.sh" )
 for i in "${installs[@]}"
 do
     :
