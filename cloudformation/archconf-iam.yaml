@@ -132,7 +132,7 @@ Resources:
   rArchConfDenyPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      ManagedPolicyName: ArchConfDenyPolicy
+      ManagedPolicyName: ArchConfDenyPolicy2
       Description: 'Permissions denied to ArchConf workshop participants'
       PolicyDocument:
         Version: 2012-10-17
