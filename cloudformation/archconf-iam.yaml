@@ -180,7 +180,8 @@ Resources:
           - ec2:DescribeVolumes
           - ec2:DescribeVolumeStatus
           - ec2:DescribeVolumesModifications
-
+          - ec2:ModifyVolume
+          - ec2:ModifyVolumeAttribute
           Resource: '*'
       Roles:
       - !Ref rArchConfRole
