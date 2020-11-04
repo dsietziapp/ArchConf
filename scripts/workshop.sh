@@ -5,7 +5,7 @@ echo Updating yum ...
 sudo yum update -y
 
 echo Downloading scripts ...
-files=( "install-rust.sh" "install-kafka.sh" "kafka-start.sh" "kafka-stop.sh" "zookeeper-start.sh" "zookeeper-stop.sh" "cleanup.sh" )
+files=( "install-rust.sh" "install-kafka.sh" "kafka-start.sh" "kafka-stop.sh" "zookeeper-start.sh" "zookeeper-stop.sh" "resize.sh" "cleanup.sh" )
 for f in "${files[@]}"
 do
     :
@@ -25,5 +25,5 @@ done
 
 #echo Performing installations ...
 #./install-rust.sh
-#source $HOME/.cargo/env
+# echo | source $HOME/.cargo/env
 #./install-kafka.sh
