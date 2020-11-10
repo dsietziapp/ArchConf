@@ -1,4 +1,19 @@
 #!/bin/bash
+
+WORKSHOP=undefined
+# Loop through arguments and process them
+for arg in "$@"
+do
+    case $arg in
+        -w|--workshop)
+        shift
+        WORKSHOP=$*
+        ;;
+    esac
+done
+
+echo "Setting up for the ${WORKSHOP} workshop ..."
+
 cd $HOME/environment
 
 echo Updating yum ...
@@ -9,7 +24,7 @@ files=( "install-rust.sh" "install-kafka.sh" "kafka-start.sh" "kafka-stop.sh" "z
 for f in "${files[@]}"
 do
     :
-    aws s3 cp s3://iapp-archconf-workshop/$f ./scripts/$f
+    aws s3 cp s3://iapp-archconf-workshop/$WORKSHOP-workshop/$f ./scripts/$f
     sudo chmod +x ./scripts/$f
 done
 
