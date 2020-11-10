@@ -31,11 +31,13 @@ done
 echo "Downloading ${WORKSHOP} scripts ..."
 files=()
 
-if [ ${WORKSHOP} == 'daas' ] then
+if [ ${WORKSHOP} == 'daas' ] 
+then
     files=( "curl-hello.sh" "curl-sourcing.sh" "curl-reporting.sh" )
 fi
 
-if [ ${WORKSHOP} == 'tdg' ] then
+if [ ${WORKSHOP} == 'tdg' ] 
+then
     files=()
 fi
 
