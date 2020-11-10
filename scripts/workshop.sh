@@ -19,8 +19,26 @@ cd $HOME/environment
 echo Updating yum ...
 sudo yum update -y
 
-echo Downloading scripts ...
-files=( "install-rust.sh" "install-kafka.sh" "kafka-start.sh" "kafka-stop.sh" "zookeeper-start.sh" "zookeeper-stop.sh" "resize.sh" "cleanup.sh" "curl-hello.sh" "curl-sourcing.sh" "curl-reporting.sh" )
+echo "Downloading shared scripts ..."
+files=( "install-rust.sh" "install-kafka.sh" "kafka-start.sh" "kafka-stop.sh" "zookeeper-start.sh" "zookeeper-stop.sh" "resize.sh" "cleanup.sh" )
+for f in "${files[@]}"
+do
+    :
+    aws s3 cp s3://iapp-archconf-workshop/$WORKSHOP-workshop/$f ./scripts/$f
+    sudo chmod +x ./scripts/$f
+done
+
+echo "Downloading ${WORKSHOP} scripts ..."
+files=()
+
+if [ ${WORKSHOP} == 'daas' ] then
+    files=( "curl-hello.sh" "curl-sourcing.sh" "curl-reporting.sh" )
+fi
+
+if [ ${WORKSHOP} == 'tdg' ] then
+    files=()
+fi
+
 for f in "${files[@]}"
 do
     :
