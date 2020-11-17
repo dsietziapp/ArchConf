@@ -38,7 +38,11 @@ fi
 
 if [ ${WORKSHOP} == 'tdg' ] 
 then
-    files=()
+    files=( "curl-tdg.sh" )
+    
+    # create ./profiles directory
+    sudo mkdir ./profiles
+    sudo chmod 777 ./profiles
 fi
 
 for f in "${files[@]}"
