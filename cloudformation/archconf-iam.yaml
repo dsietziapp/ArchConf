@@ -182,8 +182,7 @@ Resources:
           - ec2:DescribeVolumesModifications
           - ec2:ModifyVolume
           - ec2:ModifyVolumeAttribute
-          - ec2:DescribeTags
-          - ec2:CreateTags
+          - cloud9:TagResource
           Resource: '*'
       Roles:
       - !Ref rArchConfRole
