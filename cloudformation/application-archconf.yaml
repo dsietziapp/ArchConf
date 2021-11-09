@@ -98,4 +98,4 @@ Outputs:
       Name: !Sub "shared:${pApplication}:${pEnvironment}:secret:arn"  
   SourceCode:
     Description: The location of the source code for this CFT
-    Value: !Ref pSourceCodeURL
+    Value: !Ref pSourceCodeURL 
