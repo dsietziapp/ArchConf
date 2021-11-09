@@ -27,5 +27,3 @@ code:
 # (Optional) A list (array) of template files (including extension) to build and deploy in the order specified
 queue:
   - application-archconf.yaml
-  - archconf-iam.yaml
-  - archconf-s3.yaml
