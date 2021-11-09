@@ -23,7 +23,7 @@ catalog:
 # Metadata information about the resource
 code:
   # (Required) The location (url) where to find the source code
-  sourcecode_url: https://github.com/dsietziapp/ArchConf  
+  sourcecode_url: https://github.com/PrivacyAssociation/iapp-example-infra
 # (Optional) A list (array) of template files (including extension) to build and deploy in the order specified
 queue:
   - application-archconf.yaml
