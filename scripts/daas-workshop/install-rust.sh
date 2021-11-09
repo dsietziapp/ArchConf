@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 echo Installing Rust ...
 cd $HOME/environment
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
