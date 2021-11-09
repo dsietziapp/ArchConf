@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 curl --location --request POST 'http://localhost:8000/order/clothing/iStore/5000' \
 --header 'Data-Usage-Agreement: [{"agreement_name":"billing","location":"www.dua.org/billing.pdf","agreed_dtm": 1553988607}]' \

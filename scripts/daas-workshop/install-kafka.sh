@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 echo Installing Kafka ...
 cd $HOME/environment
 #curl https://apache.claz.org/kafka/2.6.0/kafka_2.13-2.6.0.tgz -o kafka_2.13-2.6.0.tgz

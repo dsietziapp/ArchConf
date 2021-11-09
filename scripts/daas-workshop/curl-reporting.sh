@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 PRODUCT=all
 # Loop through arguments and process them
 for arg in "$@"
