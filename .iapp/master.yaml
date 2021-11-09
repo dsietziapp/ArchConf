@@ -5,6 +5,6 @@ aws:
   # (Required) The AWS region to use
   region: us-east-1
   # (Required) The number of the AWS Account to use
-  account: 298049552655
+  account: 759021155229
   # (Required) The name of the environment to use
   environment: production
