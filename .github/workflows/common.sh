@@ -285,10 +285,6 @@ deploy_templates() {
     # clear the QUEUE
     declare -a QUEUE
 
-    echo "***** QUEUE ******"
-    echo ${IAPP_queue}
-    echo "*****************"
-
     if [ -z ${IAPP_queue} ];
     then
         echo "  Using default build queue ..."

@@ -8,3 +8,19 @@ aws:
   account: 759021155229
   # (Required) The name of the environment to use
   environment: sandbox
+  # (Required) The name of the domain, (e.g.: myapp-api). Leave blank if no custom domain name is needed.
+  domain: ''
+  # (Required) The AWS arn of the certificate used by the api. Must be provided if the domain name is set
+  certarn: arn:aws:acm:us-east-1:298049552655:certificate/d6bc89eb-dc5c-42f3-b285-450b3926be01
+  # (Optional) The level of logging to use, (0=off, 1=debug, 2=info, 3=warn, 4=error)
+  loglevel: 1
+  # (Optional) Turns on/off the scheduler
+  scheduler_state: DISABLED
+  # (Optional) The number of brokers to stand up in the cluster
+  broker_count: 2
+  # (Optional) The ARN of the MSK cluster
+  msk_arn: 'arn:aws:kafka:us-east-1:759021155229:cluster/myapp-sandbox/27a58023-0885-41ea-924c-6a22078ae897-16'
+  # (Optional) The list MSK broker endpoints used by the Kafka Client for their connections
+  msk_brokers: '["b-1.myapp-sandbox.dhy9kl.c16.kafka.us-east-1.amazonaws.com:9094","b-2.myapp-sandbox.dhy9kl.c16.kafka.us-east-1.amazonaws.com:9094"]'
+  # (Optional) The list MSK broker endpoints used by the Kafka Client for their connections
+  msk_zookeepers: '["z-2.myapp-sandbox.dhy9kl.c16.kafka.us-east-1.amazonaws.com:2182","z-1.myapp-sandbox.dhy9kl.c16.kafka.us-east-1.amazonaws.com:2182","z-3.myapp-sandbox.dhy9kl.c16.kafka.us-east-1.amazonaws.com:2182"]'
