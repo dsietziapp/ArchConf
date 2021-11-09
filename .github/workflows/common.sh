@@ -13,16 +13,16 @@ DEFAULT_VALUE="na"
 TEMPLATE_EXT="yaml"
 ACCOUNTS="[]"
 ACCOUNT="{}"
-ARTIFACT_BCKT="iapp-artifact-repository"
+ARTIFACT_BCKT="iapp-artifacts-repository"
 declare -a QUEUE
 TEMPLATES="[]"
-DEPLOY_ROLE="OrganizationAccountAccessRole"
+DEPLOY_ROLE="scaffoldingguardrailsAccessRole"
 
 #FUNCTIONS
 
 # Parameters
 # $1 = The account number where to assume the role
-# $2 = Name of the role to assume, (e.g.: OrganizationAccountAccessRole)
+# $2 = Name of the role to assume, (e.g.: scaffoldingguardrailsAccessRole)
 assume_role() {
     reset_credentials
     
@@ -67,11 +67,11 @@ build_artifact_template() {
     stage_built_artifact "s3://$ARTIFACT_BCKT/artifacts/$CATALOG_PATH/builds/$1/$ARTIFACT" $ARTIFACT_MATURITY $ARTIFACT $3 $TAGSET
 }
 
-# This function builds (which includes deploying) the templates in the sepcified directory
+# This function builds (which includes deploying) the templates in the specified directory
 #
 # Parameters
 # $1 = The account number where to assume the role
-# $2 = Name of the role to assume, (e.g.: OrganizationAccountAccessRole)
+# $2 = Name of the role to assume, (e.g.: scaffoldingguardrailsAccessRole)
 # $3 = The aws region to deploy to
 # $4 = The name of the template file to build
 # $5 = The build number
@@ -83,11 +83,11 @@ build_template() {
     build_artifact_template $5 $4 $6
 }
 
-# This function builds (which includes deploying) the templates in the sepcified directory
+# This function builds (which includes deploying) the templates in the specified directory
 #
 # Parameters
 # $1 = The account number where to assume the role
-# $2 = Name of the role to assume, (e.g.: OrganizationAccountAccessRole)
+# $2 = Name of the role to assume, (e.g.: scaffoldingguardrailsAccessRole)
 # $3 = The directory path (within the GITHUB_WORKSPACE) to search through for the templates to build, (e.g.: cloudformation/sandbox-nonprod)
 # $4 = The aws region to deploy to
 # $5 = The build number
@@ -222,7 +222,8 @@ default_template_queue() {
 deploy_template() {
     # set variables
     url="https://$ARTIFACT_BCKT.s3.amazonaws.com/releases/$2/$3/$1"
-    stack_name $1
+    stack_name $1    
+    extract_parameters $1
     
     # Determine the action to take, (CREATE< UPDATE, DELETE)
     if ! aws cloudformation describe-stacks --stack-name $STACK ;
@@ -256,9 +257,7 @@ deploy_template() {
 
     case $CHNGSET_EXEC in 
         RUN)
-            echo " Executing changeset ..."
-            aws cloudformation execute-change-set --change-set-name "${STACK}-$BUILD_NUMBER" --stack-name "${STACK}" > ${STACK}-$BUILD_NUMBER.execchgset.json
-            #aws cloudformation wait stack-create-complete --stack-name $STACK
+            execute_change_set
             ;;
         SKIP) 
             echo " Skipping empty changeset ..."
@@ -270,11 +269,11 @@ deploy_template() {
     esac
 }
 
-# This function builds (which includes deploying) the templates in the sepcified directory
+# This function builds (which includes deploying) the templates in the specified directory
 #
 # Parameters
 # $1 = The account number where to assume the role
-# $2 = Name of the role to assume, (e.g.: OrganizationAccountAccessRole)
+# $2 = Name of the role to assume, (e.g.: scaffoldingguardrailsAccessRole)
 # $3 = The directory path (within the GITHUB_WORKSPACE) to search through for the templates to build, (e.g.: cloudformation/sandbox-nonprod)
 # $4 = The aws region to deploy to
 # $5 = The release the artifact is related with, (e.g.: 0.1.19)
@@ -312,29 +311,162 @@ deploy_templates() {
     done
 }
 
+# This function queries the events of the stack sinc ethe last time it ran
+#
+# Return
+# $LAST_TMSTMP = The timestamp of the last event record returned
+# 
+describe_events() {
+    EVENTS=$(aws cloudformation describe-stack-events --stack-name $STACK --max-items 20)
+
+    for row in $(echo "${EVENTS}" | jq -c '.StackEvents[] | @base64');
+    do
+        trim_double_quotes $row
+        _jq() {
+            echo ${TRIMMED} | base64 --decode | jq -r ${1}
+        }
+
+        TMSTMP=$(_jq '.Timestamp' )
+        dt=$(date --date=$TMSTMP +%s)
+        
+        if [ $LAST_TMSTMP -lt $dt ]
+        then
+
+            RESID=$(_jq '.LogicalResourceId' )
+            STATUS=$(_jq '.ResourceStatus' )
+            TYPE=$(_jq '.ResourceType' )
+            PHYID=$(_jq '.PhysicalResourceId' )
+            echo "| ${TMSTMP} | ${RESID} | ${STATUS} | ${TYPE} | ${PHYID} |"
+        fi
+    done 
+
+    LAST_TMSTMP=$(date --date=$TMSTMP +%s)
+}
+
+
+# This function queries the status of the stack to see if it is done
+#
+# Return
+# $STOP = The STOP indicator is set to 1 if the stack is done
+# $ERROR = The ERROR indicator is set to 1 if there was an problem
+# 
+describe_stack() {
+    #echo "Stack Name|Status|Status Reason"
+    STACK_RSLT=$(aws cloudformation describe-stacks --stack-name ${STACK})
+    STACK_NAME=$(echo "${STACK_RSLT}" | jq '.Stacks[].StackName')
+    STACK_STATUS=$(echo "${STACK_RSLT}" | jq '.Stacks[].StackStatus')
+    STACK_REASON=$(echo "${STACK_RSLT}" | jq '.Stacks[].StackStatusReason')
+    #echo -e "$STACK_NAME|$STACK_STATUS\|$STACK_REASON"
+    
+    trim_double_quotes $STACK_STATUS
+    
+    if [ $TRIMMED == "UPDATE_COMPLETE" ] || [ $TRIMMED == "CREATE_COMPLETE" ] || [ $TRIMMED == "ROLLBACK_COMPLETE" ]
+    then
+        STOP=1
+        if [ $TRIMMED == "ROLLBACK_COMPLETE" ]
+        then
+            ERROR=1
+        fi
+    fi
+}
+
+# This function executes the change set to create or update the stack.
+# It will exit with error code if the stack deployment fails
+# 
+execute_change_set() {
+    echo " Executing changeset ..."
+    aws cloudformation execute-change-set --change-set-name "${STACK}-$BUILD_NUMBER" --stack-name "${STACK}" > ${STACK}-$BUILD_NUMBER.execchgset.json
+
+    STOP=0
+    LAST_TMSTMP=$(date +%s)
+    echo "| Timestamp | Logical Id | Status | Type | Physical Id |"
+    echo "| --------- | ---------- | ------ | ---- | ----------- |"
+
+    while [ $STOP -lt 1 ]
+    do
+        # Get the latest events
+        describe_events
+        # Check to see if it is completed or rolledback
+        describe_stack
+        sleep 5s
+    done  
+
+    # print the status of the stack
+    echo "| Stack Name | Status | Reason |"
+    echo "| ---------- | ------ | ------ |"
+    echo "| $STACK_NAME | $STACK_STATUS | $STACK_REASON |"
+
+    # Exit the job if the was an error with deploying the stack
+    if [ "${ERROR}" -gt "0" ]
+    then
+        exit ${ERROR}
+    fi
+}
+
 # This function parses the template, extracts tha parameters and returns a json list of key value pairs
 #
 # Parameters
 # $1 - The name of the template file
 #
-extract_parameters_from_template() {
-    echo "Parsing template $1 for parameters list ..."
-    
-    while IFS= read -r line
+#extract_parameters_from_template() {
+#    echo "Parsing template $1 for parameters list ..."
+#    
+#    while IFS= read -r line
+#    do
+#        line=$(echo ${line})
+#        #para=$(echo "${line/Parameters./\"ParameterKey\": \"}")
+#        #para=$(echo ${para/.Default: /\",\"ParameterValue\": \"})
+#        para=$(echo "${line/Parameters./\"}")
+#        para=$(echo ${para/.Default: /=})
+#        PARAMS="${PARAMS}${para}\" "
+#
+#    done <<< $(yq r $1 --printMode pv "Parameters.*.Default")
+#
+#    #PARAMS=$(echo ${PARAMS} | sed 's/.$//' )
+#    #PARAMS="{${PARAMS}}"
+#    #PARAMS=""
+#    echo $PARAMS
+#}
+
+# This function exrtracts the paramters from a Cloudformation Template, 
+# converts it to AWS Original Format and sets the PARAMS variable with that structure
+# (see https://awscli.amazonaws.com/v2/documentation/api/latest/reference/cloudformation/deploy/index.html)
+# IMPORTANT: AWS bug - Paramter values cannot contain spaces
+#
+# Parameters
+# $1 = file name of the template
+#
+# Output
+# $PARAMS = The AWS Original Format structure of the paramters and their values
+extract_parameters() {
+    echo "Reading parameters in the ${1} template file ..."
+    PARAMS=""
+    # get the Parameters section of the template
+    for row in $(yq r ${1} Parameters); 
     do
-        line=$(echo ${line})
-        #para=$(echo "${line/Parameters./\"ParameterKey\": \"}")
-        #para=$(echo ${para/.Default: /\",\"ParameterValue\": \"})
-        para=$(echo "${line/Parameters./\"}")
-        para=$(echo ${para/.Default: /=})
-        PARAMS="${PARAMS}${para}\" "
+        #filter out the parameter names
+        if [[ ${row} =~ ^p[A-Z].+: ]];
+        then
+            # remove the colon at the end of the parameter name
+            PARAM_KEY=$( echo "${row}" | tr -d ':' )
+            # return the parameter default value
+            PARAM_VAL=$(yq r ${1} Parameters.${PARAM_KEY}.Default)
 
-    done <<< $(yq r $1 --printMode pv "Parameters.*.Default")
+            # if the default value is not blank, then override the parameter
+            if [[ $PARAM_VAL != '' ]];
+            then
+                # if the value contains spaces, then wrap it in single quotes.
+                if [[ $PARAM_VAL =~ [[:space:]] ]];
+                then
+                    PARAM_VAL="'${PARAM_VAL}'"
+                fi
+                
+                PARAMS="${PARAMS} $PARAM_KEY=$PARAM_VAL"
+            fi
+        fi
+    done
 
-    #PARAMS=$(echo ${PARAMS} | sed 's/.$//' )
-    #PARAMS="{${PARAMS}}"
-    #PARAMS=""
-    echo $PARAMS
+    echo "  Parameters: $PARAMS"
 }
 
 # This function parses the $BRANCH and manifest property files
@@ -363,9 +495,32 @@ parse_property_files() {
 promote_artifacts() {
     echo "   promoting artifacts from $1 to $2 for the release $3 ..."
     CATALOG_PATH=$IAPP_catalog_organization/$IAPP_catalog_portfolio/$IAPP_catalog_product/$IAPP_catalog_application
-    
-    aws s3 cp s3://$ARTIFACT_BCKT/artifacts/$CATALOG_PATH/$1 s3://$ARTIFACT_BCKT/artifacts/$CATALOG_PATH/$2 --recursive --acl bucket-owner-full-control
-    aws s3 cp s3://$ARTIFACT_BCKT/releases/$3/$1 s3://$ARTIFACT_BCKT/releases/$3/$2 --recursive --acl bucket-owner-full-control
+
+    ARR=$(yq r -j $IAPP_HOME/manifest.$TEMPLATE_EXT pipeline.artifacts)
+    array_length $ARR
+
+    a=0
+    while [ $a -lt $ARRAY_LENGTH ]
+    do
+        name=$(yq r -j $IAPP_HOME/manifest.$TEMPLATE_EXT pipeline.artifacts[$a].name | sed -e 's/^"//' -e 's/"$//')
+        type=$(yq r -j $IAPP_HOME/manifest.$TEMPLATE_EXT pipeline.artifacts[$a].type | sed -e 's/^"//' -e 's/"$//')
+        build_dir=$(yq r -j $IAPP_HOME/manifest.$TEMPLATE_EXT pipeline.artifacts[$a].build_dir | sed -e 's/^"//' -e 's/"$//')
+        file="$name.zip"
+
+        echo "   Artifact: $file"
+        case $type in 
+            script)
+                aws s3 cp s3://$ARTIFACT_BCKT/artifacts/$CATALOG_PATH/$1/$file s3://$ARTIFACT_BCKT/artifacts/$CATALOG_PATH/$2/$file --acl bucket-owner-full-control
+                aws s3 cp s3://$ARTIFACT_BCKT/releases/$3/$1/$file s3://$ARTIFACT_BCKT/releases/$3/$2/$file --acl bucket-owner-full-control
+                ;;
+            *)
+                echo "Error: $type is an unsupported build type!"
+                exit 1
+                ;;
+        esac
+
+	    a=$(( a+1 ))
+    done
 }
 
 # This function resets the AWS credentials back to the original settings from when the Workflow initiated.
@@ -474,7 +629,7 @@ retrieve_templates() {
 #
 set_parameter() {
    #echo "  Setting $2 to $3 in $1 ..."
-   sed -i "s/$2/$3/g" $1
+   sed -i "s|$2|$3|g" $1
 }
 
 # This function sets all the standard parameters in the template
@@ -488,9 +643,11 @@ set_parameters() {
    set_parameter $1 "\${{ iapp.catalog.product }}" $IAPP_catalog_product
    set_parameter $1 "\${{ iapp.catalog.application }}" $IAPP_catalog_application
    set_parameter $1 "\${{ iapp.catalog.department }}" $IAPP_catalog_department
-   set_parameter $1 "\${{ iapp.aws.environment }}" $IAPP_aws_environment
    set_parameter $1 "\${{ iapp.pipeline.release_lvl }}" $IAPP_pipeline_release_lvl
    set_parameter $1 "\${{ iapp.pipeline.release_vrs }}" $IAPP_pipeline_release_vrs
+   set_parameter $1 "\${{ iapp.aws.environment }}" $IAPP_aws_environment
+   set_parameter $1 "\${{ iapp.aws.domain }}" $IAPP_aws_domain
+   set_parameter $1 "\${{ iapp.code.sourcecode_url }}" $IAPP_code_sourcecode_url
 
    # optional paramters
    if [ -z "$IAPP_catalog_component" ]
@@ -506,6 +663,60 @@ set_parameters() {
       echo "  Using default value for parameter iapp.catalog.support_email ..."   
    else
       set_parameter $1 "\${{ iapp.catalog.support_email }}" $IAPP_catalog_support_email
+   fi
+
+   if [ -z "$IAPP_aws_certarn" ]
+   then
+      echo "  Using default value for parameter iapp.aws.certarn ..."   
+   else
+      set_parameter $1 "\${{ iapp.aws.certarn }}" $IAPP_aws_certarn
+   fi
+
+   if [ -z "$IAPP_aws_loglevel" ]
+   then
+      echo "  Using default value for parameter iapp.aws.loglevel ..."   
+      set_parameter $1 '2'
+   else
+      set_parameter $1 "\${{ iapp.aws.loglevel }}" $IAPP_aws_loglevel
+   fi
+
+   if [ -z "$IAPP_aws_broker_count" ]
+   then
+      echo "  Using default value for parameter iapp.aws.broker_count ..."   
+      set_parameter $1 2
+   else
+      set_parameter $1 "\${{ iapp.aws.broker_count }}" $IAPP_aws_broker_count
+   fi
+
+   if [ -z "$IAPP_aws_msk_arn" ]
+   then
+      echo "  Using default value for parameter iapp.aws.msk_arn ..."   
+   else
+      set_parameter $1 "\${{ iapp.aws.msk_arn }}" $IAPP_aws_msk_arn
+   fi
+
+   if [ -z "$IAPP_aws_msk_brokers" ]
+   then
+      echo "  Using default value for parameter iapp.aws.msk_brokers ..."   
+      set_parameter $1 '["localhost:9094"]'
+   else
+      set_parameter $1 "\${{ iapp.aws.msk_brokers }}" $IAPP_aws_msk_brokers
+   fi
+
+   if [ -z "$IAPP_aws_msk_zookeepers" ]
+   then
+      echo "  Using default value for parameter iapp.aws.msk_zookeepers ..."   
+      set_parameter $1 '["localhost:2182"]'
+   else
+      set_parameter $1 "\${{ iapp.aws.msk_zookeepers }}" $IAPP_aws_msk_zookeepers
+   fi
+
+   if [ -z "$IAPP_aws_scheduler_state" ]
+   then
+      echo "  Using default value for parameter iapp.aws.scheduler_state ..."   
+      set_parameter $1 'DISABLED'
+   else
+      set_parameter $1 "\${{ iapp.aws.scheduler_state }}" $IAPP_aws_scheduler_state
    fi
 }
 
@@ -534,7 +745,7 @@ stack_name() {
 # $5 = The aws Tagset to use for tagging the artifacts
 #
 stage_built_artifact() {
-    if [[ $2 == pre-alpha ]] || [[ $2 == alpha ]];
+    if [[ $2 == pre-alpha ]] || [[ $2 == alpha ]] ||  [[ $2 == beta ]]  ||  [[ $2 == general-release ]];
     then        
         CATALOG_PATH=$IAPP_catalog_organization/$IAPP_catalog_portfolio/$IAPP_catalog_product/$IAPP_catalog_application
         aws s3 cp $1 s3://$ARTIFACT_BCKT/artifacts/$CATALOG_PATH/$2/$3 --acl bucket-owner-full-control
@@ -598,6 +809,19 @@ tagset() {
     TAGSET=${TAGSET}'"}'
     TAGSET=${TAGSET}']}'
     TAGSET=${TAGSET}""
+}
+
+# This function removes the first and last double quotes from the string
+#
+# Parameters
+# $1 = The string to trim
+#
+# Return
+# TRIMMED = The name of the variable to use that represents the trimmed string
+#
+trim_double_quotes() {
+    #echo "Trimming ${1} ..."
+    TRIMMED=$(echo "${1}" | sed -e 's/^"//' -e 's/"$//')
 }
 
 # This function validates the template with the cloudformation service

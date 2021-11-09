@@ -1,8 +1,7 @@
 # ArchConf WorkShop
 ![Nonproduction Pipeline](https://github.com/dsietziapp/ArchConf/workflows/Nonproduction%20Pipeline/badge.svg)
 
-+ [Hands-On Experience with Data as a Service](https://archconf.com/session?id=46844)
-+ [Building a Test Data Generation Service](https://archconf.com/session?id=46792)
++ [Hands-On Experience with Data as a Service](https://archconf.com/session?id=47149)
 
 ---
 

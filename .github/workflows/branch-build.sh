@@ -60,16 +60,13 @@ case $ARTIFACT_MATURITY in
         deploy_templates $IAPP_aws_account $DEPLOY_ROLE $IAPP_pipeline_build_dir $IAPP_aws_region $IAPP_pipeline_release_vrs
         ;;
     beta)
-        # promote alpha to beta and test and then to release candidate
-        promote_artifacts "alpha" "beta" $IAPP_pipeline_release_vrs
-        echo "   testing succesfully completed ..."
-        echo "   promoting artifacts to release candidates ..."
-        promote_artifacts "beta" "release-candidate" $IAPP_pipeline_release_vrs
+        # build from scratch
+        build_templates $IAPP_aws_account $DEPLOY_ROLE $IAPP_pipeline_build_dir $IAPP_aws_region $BUILD_NUMBER $IAPP_pipeline_release_vrs
         deploy_templates $IAPP_aws_account $DEPLOY_ROLE $IAPP_pipeline_build_dir $IAPP_aws_region $IAPP_pipeline_release_vrs
         ;;
     general-release)
-        echo "   promoting artifacts to general release ..."
-        promote_artifacts "release-candidate" "general-release" $IAPP_pipeline_release_vrs
+        # build from scratch
+        build_templates $IAPP_aws_account $DEPLOY_ROLE $IAPP_pipeline_build_dir $IAPP_aws_region $BUILD_NUMBER $IAPP_pipeline_release_vrs
         deploy_templates $IAPP_aws_account $DEPLOY_ROLE $IAPP_pipeline_build_dir $IAPP_aws_region $IAPP_pipeline_release_vrs
         ;;
     *)
