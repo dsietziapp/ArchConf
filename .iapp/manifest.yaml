@@ -15,7 +15,7 @@ catalog:
   # (Required) The name of the application (or service module) that identifies its components
   application: archconf
   # (Optional) The name of the component that aligns with the application or service module
-  component: infra
+  component: infrastructure
   # (Required) The name of the department that owns the resource
   department: tech
   # (Optional) The email address of the support team to contact
