@@ -240,7 +240,7 @@ Resources:
       LoginProfile: 
         Password:
           !GetAtt rGetArchConfSecret.Pswrd
-        PasswordResetRequired: true
+        PasswordResetRequired: false
       Tags: 
         - 
           Key: "Name"
