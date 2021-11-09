@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 WORKSHOP=undefined
 # Loop through arguments and process them
